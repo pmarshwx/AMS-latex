@@ -1,21 +1,21 @@
-% BibTeX bibliography style `aer' (American Economic Review)
-% this file is based on the `harvard' family of files
-        % version 0.99a for BibTeX versions 0.99a or later, LaTeX version 2.09.
-        % Copyright (C) 1991, all rights reserved.
-        % Copying of this file is authorized only if either
-        % (1) you make absolutely no changes to your copy, including name, or
-        % (2) if you do make changes, you name it something other than
-        % btxbst.doc, plain.bst, unsrt.bst, alpha.bst, abbrv.bst, agsm.bst,
-        % dcu.bst, cje.bst, aer.bst, or kluwer.bst.
-        % This restriction helps ensure that all standard styles are identical.
+    %  BibTex bibliography for the American Meteorological Society
+    % this file is based on the `harvard' family of files
+    % version 0.99a for BibTeX versions 0.99a or later, LaTeX version 2.09.
+    % Copyright (C) 1991, all rights reserved.
+    % Copying of this file is authorized only if either
+    % (1) you make absolutely no changes to your copy, including name, or
+    % (2) if you do make changes, you name it something other than
+    % btxbst.doc, plain.bst, unsrt.bst, alpha.bst, abbrv.bst, agsm.bst,
+    % dcu.bst, cje.bst, aer.bst, or kluwer.bst.
+    % This restriction helps ensure that all standard styles are identical.
 
-% ACKNOWLEDGEMENT:
-%   This document is a modified version of alpha.bst to which it owes much of
-%   its functionality.
-
-% AUTHOR
-%   Peter Williams, Key Centre for Design Quality, Sydney University
-%   e-mail: peterw@archsci.arch.su.oz.au
+    % ACKNOWLEDGEMENT:
+    %   This document is a modified version of aer.bst, which is a modified version
+    %   of alpha.bst to which it owes much of its functionality.
+    
+    % AUTHOR
+    %   Larissa Reames, School of Meteorology, The University of Oklahoma
+    %   e-mail: lreames@ou.edu
 
 ENTRY
   { address author booktitle chapter doi edition editor howpublished institution
@@ -149,7 +149,7 @@ FUNCTION {plain.colon.output} {plain.colon output}
 
 FUNCTION {fin.article}
 {block note plain.space.output
-  comma "" plain empty output.nonnull pop$
+  period "" plain empty output.nonnull pop$
   newline$
 }
 FUNCTION {fin.entry}
@@ -960,7 +960,7 @@ FUNCTION {inproceedings}
         }
         { comma address plain.comma.output
           space organization plain.comma.output
-          space publisher plain.comma output.nonnull
+          space publisher plain.comma.output
         }
       if$
     }
