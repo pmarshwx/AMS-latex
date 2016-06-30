@@ -6,7 +6,7 @@ This is an updated version of the AMS Bibliography bst file that actually adhere
 The initial version of this code was contributed by Larissa Reames.
 
 ### Contributors
-  - Larissa Reames (lreames@ou.edu)
+  - [Larissa Reames] (lreames@ou.edu)
 
 ### Maintainer
-  - Patrick Marsh (patrick.marsh@noaa.gov)
+  - [Patrick Marsh] (patrick.marsh@noaa.gov)
