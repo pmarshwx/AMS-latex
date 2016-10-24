@@ -241,44 +241,6 @@ FUNCTION {compare.names}
 % duplicate$ warning$
 }
 
-FUNCTION {compare.names.bsame}
-{   's :=
-    'temp :=
-    temp num.names$ 'len1 :=
-    s num.names$ 'len2 :=
-% len1 := min(len1,len2)
-    len1 len2 > {len2 'len1 :=} {} if$
-% start with an empty string, then while the components are the same
-% add "\bysame"
-    ""
-    #1 'i :=
-    {i len1 > not}
-    { temp i "{ff }{vv }{ll}{ jj}" format.name$
-% duplicate$ i int.to.str$ * warning$
-      s i "{ff }{vv }{ll}{ jj}" format.name$
-% duplicate$ i int.to.str$ * warning$
-      =
-        { #1 i < {" and " *} {} if$
-          "" * i #1 + 'i :=}
-        {#-1 'len1 :=}
-        if$
-      }
-    while$
-% add the rest of the second string
-    {i len2 > not}
-    { %#1 i < {" and " *} {} if$
-      s i "{ff }{vv }{ll}{ jj}" format.name$ *
-      i #1 + 'i :=
-      }
-    while$
-% duplicate$ warning$
-}
-
-%FUNCTION{init.doi.string}
-%{
- %", doi:" 'doipre :=
-%}
-
 INTEGERS { nameptr namesleft numnames }
 
 FUNCTION {write.doi}
@@ -344,75 +306,15 @@ FUNCTION {format.authors}
 }
 
 FUNCTION {format.names.key}
-{ %int.to.chr$ 'bsnum.cur :=
-  'name.list :=
-  'name.style :=
-  'later.name.formats :=
-  's := % binary separator
-  'first.name.format :=
-  %prev.author.bsame author format.bsnum.key
-  #1 'nameptr :=
-  bsnum int.to.str$ 'bsnum.cur :=
-  name.list num.names$ 'numnames :=
-% If we're to make this entry bold or something, prepend to the string of names
-  name.style "" = {} {"{" name.style *} if$
-  numnames 'namesleft :=
-       { namesleft #0 > }
-    { name.list nameptr nameptr #1 = {first.name.format} {later.name.formats} if$
-                format.name$  'temp :=
-                %"" * #1 int.to.chr$ *
-      nameptr #1 >
-        { %numnames #8 >
-           %{#0 'namesleft :=}
-           %{}
-           %if$
-	 nameptr #2 =   % handle ", and" vs " and "
-             {s * bsnum.cur *}
-             {s * }
-             if$
-           nameptr bsnum =
-           bsnum #1 >
-           and
-                  {#0 'namesleft :=
-                   #0 'nameptr :=
-	   	      s * temp *}
-                   {}
-    	     if$             
-
-          namesleft #1 >
-            { "" * temp * }
-            { numnames #8 >
-                { ", and~Coauthors" * }
-                { bsnum #2 <
-                  nameptr #0 > 
-                  and
-                    {s * temp *}
-                    {}
-                    %{", and " * temp * }
-                    if$
-                }
-                if$
-            }
-            if$
-        }
-        'temp
-        if$
-      nameptr #1 + 'nameptr :=
-      namesleft #1 - 'namesleft :=
-    }
-  while$% If we're to make this entry bold or something, append to the string of names
-  name.style "" = {} {"}" * *}  if$
-}
-FUNCTION {format.names.key.2}
 {
  'name.list :=
   'name.style :=
   'later.name.formats :=
   's := % binary separator
   'first.name.format :=
-  %prev.author.bsame author format.bsnum.key
+
   #1 'nameptr :=
-  %bsnum int.to.str$ 'bsnum.cur :=
+
   name.list num.names$ 'numnames :=
 % If we're to make this entry bold or something, prepend to the string of names
   name.style "" = {} {"{" name.style *} if$
@@ -431,30 +333,6 @@ FUNCTION {format.names.key.2}
              #0 'namesleft :=}
              {s * }
              if$
-%           nameptr bsnum =
-%           bsnum #1 >
-%           and
-%                  {#0 'namesleft :=
-%                   #0 'nameptr :=
-%	   	      s * temp *}
-%                   {}
-%    	     if$             
-%
-%          namesleft #1 >
-%            { "" * temp * }
-%            { numnames #8 >
-%                { ", and~Coauthors" * }
-%                { bsnum #2 <
-%                  nameptr #0 > 
- %                 and
-%                    {s * temp *}
-%                    {}
-%                    %{", and " * temp * }
-%                    if$
-%                }
-%                if$
-%            }
-%            if$
         }
         'temp
         if$
@@ -470,7 +348,7 @@ FUNCTION {format.names.key.2}
 FUNCTION {format.authors.key}
 { 'temp :=
     "{vv~}{ll}{jj}{f.}" "" "{vv~}{ll}{jj}{f.}" "" temp		%"{f.~}{vv~}{ll}{, jj}" "" temp
-                format.names.key.2
+                format.names.key
 }
 
 
@@ -907,8 +785,7 @@ FUNCTION {format.lab.names.full}
 STRINGS { prev.author prev.author.bsame}
 
 FUNCTION {make.list.label}
-{ %author top$
-    author.field field.used =
+{   author.field field.used =
     { prev.author author compare.names format.authors
          author 'prev.author :=}
     { editor.field field.used =
@@ -935,58 +812,10 @@ FUNCTION {make.list.label}
   if$
 }
 
-FUNCTION {count.bsame}
-{   's :=
-    'temp :=
-    temp num.names$ 'len1 :=
-    s num.names$ 'len2 :=
-    #0 'bsnum :=
-% len1 := min(len1,len2)
-    len1 len2 > {len2 'len1 :=} {} if$
-% start with an empty string, then while the components are the same
-% add "\bysame"
-    #1 'i :=
-    {i len1 > not}
-    { temp i "{ff }{vv }{ll}{ jj}" format.name$
-% duplicate$ i int.to.str$ * warning$
-      s i "{ff }{vv }{ll}{ jj}" format.name$
-% duplicate$ i int.to.str$ * warning$
-      =
-        { %#1 i < {" and " *} {} if$
-          bsnum #1 + 'bsnum :=
-           i #1 + 'i :=}
-        {#-1 'len1 :=}
-        if$
-      }
-    while$
-    
-% add the rest of the second string
-%    {i len2 > not}
-%    { #1 i < {" and " *} {} if$
-%      s i "{ff }{vv }{ll}{ jj}" format.name$ *
-%      i #1 + 'i :=
-%      }
-%    while$
-%bsnum int.to.chr$ *
-% duplicate$ warning$
-}
-
-
-FUNCTION {format.bsnum.key}
-{  'temp :=
-    "{vv~}{ll}{jj}{f.}" "" "{vv~}{ll}{jj}{f.}" "" temp		%"{f.~}{vv~}{ll}{, jj}" "" temp
-                count.bsame
-     }
 
 FUNCTION {make.list.label.key}
 { "abcxyz" 'prev.author :=
-  %prev.author.bsame author count.bsame
-  %bsnum #3 >
- % 	{#3 'bsnum :=}
-%	{}
- % if$
- % author 'prev.author.bsame :=
-  author.field field.used =
+   author.field field.used =
     {prev.author author compare.names format.authors.key
          author 'prev.author :=
          %author 'prev.author.bsame :=
@@ -1503,14 +1332,9 @@ FUNCTION {first.presort}
 
 ITERATE {first.presort}
 
-FUNCTION {print.sort.keys} {sort.key$ top$}
-FUNCTION {gibberish.bsame} {"abcxyz" 'prev.author.bsame :=}
-
 SORT
 
-FUNCTION {bf.2sort} {"AFTER FIRST PRESORT:" top$}
-%EXECUTE {bf.2sort}
-%ITERATE {print.sort.keys}
+
 
 STRINGS { last.label next.extra }
 INTEGERS { last.extra.num number.label }
@@ -1586,48 +1410,6 @@ FUNCTION {second.presort}
 }
 
 ITERATE {second.presort}
-
-
-FUNCTION {third.presort}
-{bsnum 'old.bsnum :=
-make.list.label.key
-bsnum old.bsnum  >
-{  "    "
-  *
-  year field.or.null sortify
-  *
-  "    "
-  *
-  title.field field.used =
-    { sort.format.title }
-    { sortify }
-  if$
-  "    "
-  *
-  short.list field.or.null sortify
-  *
-  "    "
-  *
-  title.field field.used =
-    {}
-    { title field.or.null
-      sort.format.title
-      *
-    }
-  if$
-  #1 entry.max$ substring$
-  'sort.key$ :=
-  }
-  {pop$}
-  if$
-
-author 'prev.author.bsame :=
-}
-
-
-EXECUTE{gibberish.bsame}
-
-REVERSE{third.presort}
 
 SORT
 
