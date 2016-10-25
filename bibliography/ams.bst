@@ -21,8 +21,8 @@ ENTRY
   { address author booktitle chapter doi edition editor howpublished institution
     journal key month note number organization pages publisher school
     series title type url volume year code}
-  { field.used }
-  { extra.label label sort.label short.list newlabel temp.extra}
+  { field.used bsnum}
+  { extra.label label sort.label short.list newlabel temp.extra testab.label}
 
 
 FUNCTION {not}
@@ -45,9 +45,9 @@ FUNCTION {or}
 
 INTEGERS {quoted italic bold plain attribute
         space comma tiedcomma semicolon colon period block empty separator
-        prev.separator next.separator next.attribute rightbracket leftbracket voltext doipre}
+        prev.separator next.separator next.attribute rightbracket leftbracket voltext doipre old.bsnum isams}
 
-STRINGS { s temp f name.list first.name.format later.name.formats name.style urlend tempextra}
+STRINGS { s temp f name.list first.name.format later.name.formats name.style urlend tempextra bsnum.cur}
 
 FUNCTION {init.state.consts}
 {
@@ -220,9 +220,9 @@ FUNCTION {compare.names}
     ""
     #1 'i :=
     {i len1 > not}
-    { temp i "{ff }{vv }{ll}{ jj}" format.name$
+    { temp i "{ll~}{vv}{, jj}{, ff}" format.name$
 % duplicate$ i int.to.str$ * warning$
-      s i "{ff }{vv }{ll}{ jj}" format.name$
+      s i "{ll~}{vv}{, jj}{, ff}" format.name$
 % duplicate$ i int.to.str$ * warning$
       =
         { #1 i < {" and " *} {} if$
@@ -234,24 +234,19 @@ FUNCTION {compare.names}
 % add the rest of the second string
     {i len2 > not}
     { #1 i < {" and " *} {} if$
-      s i "{ff }{vv }{ll}{ jj}" format.name$ *
+      s i "{ll~}{vv}{, jj}{, ff}" format.name$ *
       i #1 + 'i :=
       }
     while$
 % duplicate$ warning$
 }
 
-%FUNCTION{init.doi.string}
-%{
- %", doi:" 'doipre :=
-%}
-
 INTEGERS { nameptr namesleft numnames }
 
 FUNCTION {write.doi}
 {doi empty$
     {skip$}
-    { "\doiprefix\url{" doi * "}\doisuffix" * write$ newline$ }
+    { "\doiprefix" doi * "\doisuffix" * write$ newline$ }
   if$
 }
 
@@ -263,14 +258,21 @@ FUNCTION {format.names}
   'first.name.format :=
   #1 'nameptr :=
   name.list num.names$ 'numnames :=
+  %name.list top$
 % If we're to make this entry bold or something, prepend to the string of names
-  name.style "" = {} {"{" name.style *} if$
+  %name.style "" = {} {"{" name.style *} if$
   numnames 'namesleft :=
        { namesleft #0 > }
-    { name.list nameptr nameptr #1 = {first.name.format} {later.name.formats} if$
-                format.name$ 'temp :=
+    { name.list nameptr 
+      duplicate$ #1 >
+        { "{f.~}{vv~}{ll}{~jj}" }
+        { "{vv~}{ll}{, f.}{~jj}" }
+      if$
+      format.name$      
+      'temp :=
       nameptr #1 >
-        { numnames #8 >
+        {
+           numnames #8 >
            {#0 'namesleft :=}
            {}
            if$
@@ -288,19 +290,69 @@ FUNCTION {format.names}
             if$
         }
         'temp
+        
+        if$
+      nameptr #1 + 'nameptr :=
+      namesleft #1 - 'namesleft :=
+    }
+  while$% If we're to make this entry bold or something, append to the string of names
+  %name.style "" = {} {"}" * *}  if$
+}
+
+FUNCTION {format.authors}
+{ 'temp :=
+     "{vv~}{ll}{, f.}{~jj}"  " and " "{f.~}{vv~}{ll}{~jj}"  "" temp
+                format.names
+}
+
+FUNCTION {format.names.key}
+{
+ 'name.list :=
+  'name.style :=
+  'later.name.formats :=
+  's := % binary separator
+  'first.name.format :=
+
+  #1 'nameptr :=
+
+  name.list num.names$ 'numnames :=
+% If we're to make this entry bold or something, prepend to the string of names
+  name.style "" = {} {"{" name.style *} if$
+  numnames 'namesleft :=
+  numnames #3 >
+  	{#3 'numnames :=}
+	{}
+	if$
+       { namesleft #0 > }
+    { name.list nameptr nameptr #1 = {first.name.format} {later.name.formats} if$
+                format.name$  'temp :=
+                %"" * #1 int.to.chr$ *
+      nameptr #1 >
+        { nameptr #2 =   % handle ", and" vs " and "
+             {s * numnames int.to.str$ *
+             #0 'namesleft :=}
+             {s * }
+             if$
+        }
+        'temp
         if$
       nameptr #1 + 'nameptr :=
       namesleft #1 - 'namesleft :=
     }
   while$% If we're to make this entry bold or something, append to the string of names
   name.style "" = {} {"}" * *}  if$
+
 }
 
-FUNCTION {format.authors}
+
+FUNCTION {format.authors.key}
 { 'temp :=
-    "{vv~}{ll}{, jj}{, f.}" " and " "{f.~}{vv~}{ll}{, jj}" "" temp
-                format.names
+    "{vv~}{ll}{jj}{f.}" "" "{vv~}{ll}{jj}{f.}" "" temp		%"{f.~}{vv~}{ll}{, jj}" "" temp
+                format.names.key
 }
+
+
+
 
 FUNCTION {format.editors}
 { 'temp :=
@@ -499,6 +551,8 @@ FUNCTION {output.extralabel}
 FUNCTION {output.vol.num.pages.doi}
 { space volume bold space output
   number empty$
+  isams #1 =
+  or
     {}
     { space "(" number * ")" * plain.comma output.nonnull
       volume empty$
@@ -710,13 +764,14 @@ FUNCTION {format.lab.names.full}
       nameptr #1 >
         { namesleft #1 >
             { ", " * temp * }
-            { temp "others" =
-                { " and~Coauthors." * }
-                { " and " * temp * }
-              if$
-            }
+            { ", " * temp * }
+            %{ %temp "others" =
+               %{ " and~Coauthors." * }
+                %{ " and " * temp * }
+              %if$
+            %}
           if$
-        }
+             }
         'temp
       if$
       nameptr #1 + 'nameptr :=
@@ -727,10 +782,10 @@ FUNCTION {format.lab.names.full}
   numnames #1 = field.used editor.field = and {", ed" *} {} if$
 }
 
-STRINGS { prev.author }
+STRINGS { prev.author prev.author.bsame}
 
 FUNCTION {make.list.label}
-{author.field field.used =
+{   author.field field.used =
     { prev.author author compare.names format.authors
          author 'prev.author :=}
     { editor.field field.used =
@@ -757,9 +812,42 @@ FUNCTION {make.list.label}
   if$
 }
 
+
+FUNCTION {make.list.label.key}
+{ "abcxyz" 'prev.author :=
+   author.field field.used =
+    {prev.author author compare.names format.authors.key
+         author 'prev.author :=
+         %author 'prev.author.bsame :=
+         }
+    { editor.field field.used =
+        { prev.author editor compare.names format.editors
+                editor 'prev.author := }
+        { organization.field field.used =
+            { "The " #4 organization chop.word
+                duplicate$ prev.author = {pop$ "\bysame{}"}
+                                         {duplicate$ 'prev.author :=} if$}
+            { "foo" 'prev.author :=
+              title.field field.used =
+                { format.btitle }
+                { key.field field.used =
+                    { key #3 text.prefix$ }
+                    { "Internal error :001 on " cite$ * " label" * warning$ }
+                  if$
+                }
+              if$
+            }
+          if$
+        }
+      if$
+    }
+  if$
+}
+
+
 FUNCTION {make.full.label}
 { author.field field.used =
-    { author format.lab.names.full }
+    { author format.authors.key }
     { editor.field field.used =
         { editor format.lab.names.full }
         { organization.field field.used =
@@ -823,6 +911,7 @@ FUNCTION {output.bibitem}
 %  FUNCTION {list.label.output}
 % {
   space make.list.label plain comma output.nonnull
+ 
   }
 
 FUNCTION {author.item.check} {author "author" item.check}
@@ -841,8 +930,36 @@ FUNCTION {write.url}
   if$
 }
 
+FUNCTION {check.ams.journal}
+{journal "Bull. Amer. Meteor. Soc." =
+ journal "Earth Interact." =
+ or
+ journal "J. Appl. Meteor. Climatol." =
+ or
+ journal "J. Atmos. Oceanic Technol." =
+ or
+ journal "J. Climate" =
+ or 
+ journal "J. Hydrometeor." = 
+ or
+ journal "J. Phys. Oceanogr." =
+ or
+ journal "J. Atmos. Sci." =
+ or 
+ journal "Mon. Wea. Rev." =
+ or
+ journal "Wea. Forecasting" =
+ or
+ journal "Wea. Climate Soc." =
+ or
+ {#1 'isams :=}
+ {#0 'isams :=}
+ if$
+ }
+
 FUNCTION {article}
-{ output.bibitem
+{ check.ams.journal
+  output.bibitem
   author.item.check
   output.month.year
  % output.extralabel
@@ -956,7 +1073,7 @@ FUNCTION {inproceedings}
       space format.number.series plain.space.output
       address empty$
         { comma organization plain.space.output
-          space publisher plain.space.output
+          % space publisher plain.space output.nonnull
         }
         { comma address plain.comma.output
           space organization plain.comma.output
@@ -1180,27 +1297,29 @@ FUNCTION {calc.label}
       if$
     }
   if$
-  make.abbr.label
-  title.field field.used =
-    { sort.format.title }
-    { sortify }
-  if$
-  year field.or.null purify$ #-1 #4 substring$ sortify
+  make.full.label
+  %title.field field.used =
+   % { sort.format.title }
+    %{ sortify }
+  %if$
+  " " 
+  *
+  year field.or.null sortify
   *
   'sort.label :=
+  %sort.label top$
+  
 }
 
 FUNCTION {first.presort}
 { "abcxyz" 'prev.author :=
   calc.label
-  sort.label
+  " " sort.label * 
+  "    "
+  *
   title.field field.used =
     {}
     { "    "
-      *
-      make.list.label sortify
-      *
-      "    "
       *
       title field.or.null
       sort.format.title
@@ -1214,6 +1333,8 @@ FUNCTION {first.presort}
 ITERATE {first.presort}
 
 SORT
+
+
 
 STRINGS { last.label next.extra }
 INTEGERS { last.extra.num number.label }
@@ -1258,9 +1379,15 @@ ITERATE {forward.pass}
 
 REVERSE {reverse.pass}
 
+
 FUNCTION {second.presort}
-{ "abcxyz" 'prev.author :=
-  make.list.label
+{ make.list.label.key
+   "    "
+  *
+  year field.or.null sortify
+  *
+  "    "
+  *
   title.field field.used =
     { sort.format.title }
     { sortify }
@@ -1283,7 +1410,6 @@ FUNCTION {second.presort}
 }
 
 ITERATE {second.presort}
-
 
 SORT
 
