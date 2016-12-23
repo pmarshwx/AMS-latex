@@ -973,7 +973,12 @@ FUNCTION {article}
     }
   if$
   fin.article
-  write.doi
+  doi missing$
+    {  space write.url
+    }
+    {  write.doi
+    }
+  if$
 }
 
 FUNCTION {book}
