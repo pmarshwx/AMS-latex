@@ -266,7 +266,7 @@ FUNCTION {format.names}
     { name.list nameptr 
       duplicate$ #1 >
         { "{f.~}{vv~}{ll}{~jj}" }
-        { "{vv~}{ll}{, f.}{~jj}" }
+        { "{vv~}{ll}{~jj}{, f.}" }
       if$
       format.name$      
       'temp :=
@@ -301,7 +301,8 @@ FUNCTION {format.names}
 
 FUNCTION {format.authors}
 { 'temp :=
-     "{vv~}{ll}{, f.}{~jj}"  " and " "{f.~}{vv~}{ll}{~jj}"  "" temp
+     "{vv~}{ll}{, f.}{~jj}"  " and " "{f.~}{vv~}{~jj}{ll}"  "" temp
+
                 format.names
 }
 
