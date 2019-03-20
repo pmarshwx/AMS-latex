@@ -302,6 +302,7 @@ FUNCTION {format.names}
 FUNCTION {format.authors}
 { 'temp :=
      "{vv~}{ll}{, f.}{~jj}"  " and " "{f.~}{vv~}{~jj}{ll}"  "" temp
+
                 format.names
 }
 
